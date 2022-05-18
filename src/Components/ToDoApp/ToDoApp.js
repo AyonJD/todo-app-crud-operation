@@ -1,80 +1,89 @@
-import React, { useState } from "react";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 const ToDoApp = () => {
-    const [messageList, setMessageList] = useState(["Milk", "Sugar", "Butter"]);
+    const { register, handleSubmit, watch, formState: { errors } } = useForm();
+    const onSubmit = data => {
+        const name = data.name;
+        const details = data.details;
+        const tasks = { name, details }
+        fetch('http://localhost:5000/tasks', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(tasks)
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log('success', data)
+                toast.success('Item added successfully')
+            })
 
-    const addTodo = (message) => {
-        setMessageList([...messageList, message]);
-    };
-
-    const deleteTodo = (message) => {
-        let deleteMessageIndex = messageList.indexOf(message);
-        setMessageList([
-            ...messageList.slice(0, deleteMessageIndex),
-            ...messageList.slice(deleteMessageIndex + 1)
-        ]);
-    };
-
+    }
     return (
-        <div id="app">
-            <div id="header">
-                <h2>Todo List</h2>
+        <div className='flex mt-10 justify-center items-center'>
+            <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                    <h2 className="text-center text-2xl text-pink-700 font-bold">Todo App</h2>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+
+                        <div className="form-control w-full max-w-xs">
+                            <label className="label">
+                                <span className="label-text">Task Name</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Task Name"
+                                className="input input-bordered input-secondary w-full max-w-xs"
+                                {...register("name", {
+                                    required: {
+                                        value: true,
+                                        message: 'Task Name is Required'
+                                    },
+                                    minLength: {
+                                        value: 3,
+                                        message: 'Must be 3 characters or longer'
+                                    }
+                                })}
+                            />
+                            <label className="label">
+                                {errors.name?.type === 'required' && <span className="label-text-alt text-red-500">{errors.name.message}</span>}
+                                {/* {errors.name?.type === 'required' && <span className="label-text-alt text-red-500">{errors.name.message}</span>} */}
+                            </label>
+                        </div>
+                        <div className="form-control w-full max-w-xs">
+                            <label className="label">
+                                <span className="label-text">Task Description</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Task Description"
+                                className="input input-bordered input-secondary w-full max-w-xs"
+                                {...register("details", {
+                                    required: {
+                                        value: true,
+                                        message: 'Description is Required'
+                                    },
+                                    minLength: {
+                                        value: 6,
+                                        message: 'Must be 6 characters or longer'
+                                    }
+                                })}
+                            />
+                            <label className="label">
+                                {errors.details?.type === 'required' && <span className="label-text-alt text-red-500">{errors.details.message}</span>}
+                                {errors.details?.type === 'minLength' && <span className="label-text-alt text-red-500">{errors.details.message}</span>}
+                            </label>
+                        </div>
+
+
+                        <input className='btn w-full max-w-xs btn-secondary' type="submit" value="ADD" />
+                    </form>
+                </div>
             </div>
-            <TodoForm addTodo={addTodo} /> <br /> {/* Why */}
-            <TodoList messageList={messageList} deleteTodo={deleteTodo} />
-        </div>
-    );
-};
-
-
-
-const TodoForm = ({ addTodo }) => {
-    const [input, setInput] = useState("");
-
-    const changeHandler = (event) => {
-        setInput(event.target.value);
-    };
-
-    const submitHandler = (event) => {
-        addTodo(input);
-        setInput("");
-    };
-
-    return (
-        <div id="form">
-            <input
-                id="form__input"
-                type="text"
-                value={input}
-                onChange={changeHandler}
-            />
-            <button id="form__submit" onClick={submitHandler}>
-                Add Todo
-            </button>
-        </div>
-    );
-};
-
-const TodoList = ({ messageList, deleteTodo }) => (
-    <ol id="todolist">
-        {messageList.map((message, index) => (
-            <Todo message={message} deleteTodo={deleteTodo} key={index} />
-        ))}
-    </ol>
-);
-
-const Todo = ({ message, deleteTodo }) => {
-    const handleSubmit = (event) => {
-        deleteTodo(message);
-    };
-
-    return (
-        <li id="todo">
-            <span id="todo__label">{message + "  "}</span>
-            <button id="todo__delete" onClick={handleSubmit}>
-                Delete
-            </button>
-        </li>
+        </div >
     );
 };
 

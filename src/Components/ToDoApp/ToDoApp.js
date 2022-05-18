@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 const ToDoApp = () => {
-    const { register, handleSubmit, watch, formState: { errors } } = useForm();
+    const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
     const onSubmit = data => {
         const name = data.name;
         const details = data.details;
@@ -20,7 +20,7 @@ const ToDoApp = () => {
                 console.log('success', data)
                 toast.success('Item added successfully')
             })
-
+        reset()
     }
     return (
         <div className='flex mt-10 justify-center items-center'>
